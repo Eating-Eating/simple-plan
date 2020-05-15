@@ -1,0 +1,73 @@
+<html>
+  <body>
+    <div id="btn1">
+      123
+    </div>
+    <div id="btn2">
+      123
+    </div>
+  </body>
+</html>
+<script>
+//闭包的应用，保存变量
+//工厂函数
+const debounce = function(func, wait, immediate) {
+  let timeout, args, context, timestamp, result
+  const later = function () {
+    // 据上一次触发时间间隔
+    const last = +new Date() - timestamp
+    // 上次被包装函数被调用时间间隔last小于设定时间间隔wait
+    if (last < wait && last > 0) {
+      timeout = setTimeout(later, wait - last)
+    } else {
+      timeout = null
+      // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
+      if (!immediate) {
+        result = func.apply(context, args)
+        if (!timeout) context = args = null
+      }
+    }
+  }
+
+  return function (...args) {
+    console.log('tag', args)
+    context = this
+    timestamp = +new Date()
+    const callNow = immediate && !timeout
+    // 如果延时不存在，重新设定延时
+    if (!timeout) timeout = setTimeout(later, wait)
+    if (callNow) {
+      result = func.apply(context, args)
+      context = args = null
+    }
+
+    return result
+  }
+}
+//闭包的应用
+const func = (a = 1)=>{console.log(a)}
+// debounce(func,30000,false)
+const btn1Obj = document.getElementById("btn1");
+const btn2Obj = document.getElementById("btn2");
+btn1Obj.addEventListener("click",debounce(func,3000,false,3,3));
+btn2Obj.addEventListener("click",debounce(func,3000,false,3,3));
+//参考
+// 下面是一个更有意思的示例 — 一个 makeAdder 函数：
+
+// function makeAdder(x) {
+//   return function(y) {
+//     return x + y;
+//   };
+// }
+
+// var add5 = makeAdder(5);
+// var add10 = makeAdder(10);
+
+// console.log(add5(2));  // 7
+// console.log(add10(2)); // 12
+// 在这个示例中，我们定义了 makeAdder(x) 函数，它接受一个参数 x ，并返回一个新的函数。返回的函数接受一个参数 y，并返回x+y的值。
+
+// 从本质上讲，makeAdder 是一个函数工厂 — 他创建了将指定的值和它的参数相加求和的函数。在上面的示例中，我们使用函数工厂创建了两个新函数 — 一个将其参数和 5 求和，另一个和 10 求和。
+
+// add5 和 add10 都是闭包。它们共享相同的函数定义，但是保存了不同的词法环境。在 add5 的环境中，x 为 5。而在 add10 中，x 则为 10。
+</script>
